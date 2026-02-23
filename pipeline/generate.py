@@ -129,9 +129,7 @@ def compute_all_predictions(
         combo_df = df.filter(
             (pl.col("city") == row["city"]) & (pl.col("type_of_room") == row["type_of_room"])
         )
-        results.extend(
-            _fit_and_predict(combo_df, horizon_days, row["city"], row["type_of_room"])
-        )
+        results.extend(_fit_and_predict(combo_df, horizon_days, row["city"], row["type_of_room"]))
 
     return results
 
