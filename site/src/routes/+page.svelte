@@ -2,6 +2,7 @@
 	import Filters from '$lib/components/Filters.svelte';
 	import DataTable from '$lib/components/DataTable.svelte';
 	import ForecastChart from '$lib/components/ForecastChart.svelte';
+	import WaitTimeMap from '$lib/components/WaitTimeMap.svelte';
 	import type { RecentlyRented, Prediction } from '$lib/types';
 
 	const { data } = $props<{ data: import('./$types').PageData }>();
@@ -61,6 +62,10 @@
 
 	<section style="margin-bottom: 48px;">
 		<ForecastChart predictions={filteredPredictions} observations={filtered} />
+	</section>
+
+	<section style="margin-bottom: 48px;">
+		<WaitTimeMap stats={data.data.stats} observations={filtered} {selectedCity} {selectedRoomType} />
 	</section>
 
 	<section style="margin-bottom: 48px;">
