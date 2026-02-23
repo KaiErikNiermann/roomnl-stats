@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 import { match } from 'ts-pattern';
 import type { RecentlyRented, Prediction, CityStats, SiteData } from './types';
 
@@ -9,7 +10,7 @@ function extract<T>(result: PromiseSettledResult<T>, fallback: T): T {
 }
 
 export async function loadSiteData(fetchFn: typeof fetch = fetch): Promise<SiteData> {
-	const basePath = '/data';
+	const basePath = `${base}/data`;
 
 	const [rr, pred, stats] = await Promise.allSettled([
 		fetchFn(`${basePath}/recently_rented.json`).then((r) => r.json() as Promise<RecentlyRented[]>),
