@@ -2,6 +2,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import '../app.css';
 	import { browser } from '$app/environment';
+	import { base } from '$app/paths';
 
 	let { children } = $props();
 
@@ -23,7 +24,24 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<div style="position: fixed; top: 20px; right: 20px; z-index: 50;">
+<div style="position: fixed; top: 20px; right: 20px; z-index: 50; display: flex; gap: 8px;">
+	<button
+		onclick={() => { const a = document.createElement('a'); a.href = `${base}/data/recently_rented.json`; a.download = 'recently_rented.json'; a.click(); }}
+		aria-label="Download data"
+		style="
+			display: flex; align-items: center; justify-content: center;
+			width: 38px; height: 38px;
+			border-radius: var(--radius-md);
+			background: var(--bg-card);
+			border: 1px solid var(--border);
+			color: var(--text-muted);
+			box-shadow: var(--shadow-sm);
+			cursor: pointer;
+			transition: all 0.15s ease;
+		"
+	>
+		<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+	</button>
 	<button
 		onclick={() => (dark = !dark)}
 		aria-label="Toggle theme"
