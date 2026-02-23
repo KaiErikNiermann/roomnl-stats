@@ -10,8 +10,17 @@
 
 	const { predictions, observations }: Props = $props();
 
-	let registrationDate = $state('2022-01-01');
+	const LS_KEY = 'roomnl_reg_date';
+
+	function loadFromStorage(): string {
+		if (typeof localStorage === 'undefined') return '2022-01-01';
+		return localStorage.getItem(LS_KEY) ?? '2022-01-01';
+	}
+
+	let registrationDate = $state(loadFromStorage());
 	let daysInput = $state('');
+	let savedIndicator = $state(false);
+	let savedTimer: ReturnType<typeof setTimeout> | null = null;
 	let svgEl: SVGSVGElement | null = $state(null);
 	let resetZoom: (() => void) | null = $state(null);
 
@@ -30,17 +39,28 @@
 		return 0.5 * (1 + sign * erf);
 	}
 
+	function saveToStorage(date: string) {
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem(LS_KEY, date);
+		}
+		if (savedTimer) clearTimeout(savedTimer);
+		savedIndicator = true;
+		savedTimer = setTimeout(() => { savedIndicator = false; }, 2000);
+	}
+
 	function handleDaysInput() {
 		const days = Number.parseInt(daysInput, 10);
 		if (Number.isNaN(days) || days < 0) return;
 		const regDate = new Date(Date.now() - days * 86_400_000);
 		registrationDate = regDate.toISOString().slice(0, 10);
+		saveToStorage(registrationDate);
 	}
 
 	function handleDateInput() {
 		const ms = new Date(registrationDate).getTime();
 		const days = Math.max(0, Math.round((Date.now() - ms) / 86_400_000));
 		daysInput = String(days);
+		saveToStorage(registrationDate);
 	}
 
 	$effect(() => {
@@ -296,6 +316,12 @@
 			}
 
 			if (probLine.length > 0) {
+				const probLineGen = d3
+					.line<(typeof probLine)[number]>()
+					.x((d) => x(d.date))
+					.y((d) => yR(d.prob))
+					.curve(d3.curveBasis);
+
 				chart
 					.append('path')
 					.attr('class', 'prob-line')
@@ -303,14 +329,39 @@
 					.attr('fill', 'none')
 					.attr('stroke', '#ef4444')
 					.attr('stroke-width', 1.8)
-					.attr(
-						'd',
-						d3
-							.line<(typeof probLine)[number]>()
-							.x((d) => x(d.date))
-							.y((d) => yR(d.prob))
-							.curve(d3.curveBasis),
-					);
+					.attr('d', probLineGen);
+
+				// invisible wide hit area for prob line tooltip
+				const bisectProb = d3.bisector<(typeof probLine)[number], Date>((d) => d.date).left;
+				chart
+					.append('path')
+					.attr('class', 'prob-line')
+					.datum(probLine)
+					.attr('fill', 'none')
+					.attr('stroke', 'transparent')
+					.attr('stroke-width', 14)
+					.attr('d', probLineGen)
+					.style('cursor', 'crosshair')
+					.on('mousemove', (event: MouseEvent) => {
+						const [mx] = d3.pointer(event);
+						const dateAtMouse = x.invert(mx);
+						const idx = Math.min(bisectProb(probLine, dateAtMouse), probLine.length - 1);
+						const p = probLine[idx] as (typeof probLine)[number] | undefined;
+						if (!p) return;
+						tooltip
+							.style('opacity', '1')
+							.html(
+								`<strong style="font-size:13px;">Probability</strong><br/>` +
+									`<span style="color:${themeAxisText};">${p.date.toLocaleDateString('en-NL')}</span><br/>` +
+									`P(&#8805; required): <strong style="color:#ef4444;">${p.prob.toFixed(1)}%</strong>`,
+							);
+						tooltip
+							.style('left', `${String(event.clientX + 14)}px`)
+							.style('top', `${String(event.clientY - 60)}px`);
+					})
+					.on('mouseleave', () => {
+						tooltip.style('opacity', '0');
+					});
 			}
 
 			for (const trend of cityTrends) {
@@ -515,23 +566,32 @@
 		</label>
 		<label style="display: flex; flex-direction: column; gap: 6px;">
 			<span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);">Days registered</span>
-			<input
-				type="number"
-				min="0"
-				bind:value={daysInput}
-				onchange={handleDaysInput}
-				style="
-					height: 40px; width: 120px; padding: 0 14px;
-					font-size: 14px; font-family: var(--font-mono);
-					border-radius: var(--radius-md);
-					border: 1px solid var(--border);
-					background: var(--bg-input);
-					color: var(--text-primary);
-					box-shadow: var(--shadow-sm);
-					outline: none;
-				"
-				placeholder="e.g. 1460"
-			/>
+			<div style="display: flex; align-items: center; gap: 8px;">
+				<input
+					type="number"
+					min="0"
+					bind:value={daysInput}
+					onchange={handleDaysInput}
+					style="
+						height: 40px; width: 120px; padding: 0 14px;
+						font-size: 14px; font-family: var(--font-mono);
+						border-radius: var(--radius-md);
+						border: 1px solid var(--border);
+						background: var(--bg-input);
+						color: var(--text-primary);
+						box-shadow: var(--shadow-sm);
+						outline: none;
+					"
+					placeholder="e.g. 1460"
+				/>
+				<span style="
+					font-size: 11px; font-weight: 500;
+					color: #34d399;
+					opacity: {savedIndicator ? 1 : 0};
+					transition: opacity 0.3s ease;
+					white-space: nowrap;
+				">saved</span>
+			</div>
 		</label>
 		<div style="display: flex; align-items: center; gap: 16px; padding-bottom: 2px; font-size: 14px; color: var(--text-muted);">
 			<span>

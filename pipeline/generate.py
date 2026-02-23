@@ -22,6 +22,8 @@ from rich.table import Table
 from pipeline.roomnl_model import fit_gp_with_calendar, predict_daily
 from pipeline.scraper import scrape
 
+MIN_ROWS_FOR_GP = 20
+
 logging.disable(logging.CRITICAL)  # silence noisy library loggers
 
 console = Console()
@@ -70,14 +72,21 @@ def compute_stats(df: pl.DataFrame) -> list[dict[str, Any]]:
     return stats.to_dicts()
 
 
-def compute_predictions(
+def _fit_and_predict(
     df: pl.DataFrame,
-    horizon_days: int = 730,
+    horizon_days: int,
+    city: str | None,
+    type_of_room: str | None,
 ) -> list[dict[str, Any]]:
-    """Fit GP and predict daily for the next `horizon_days`."""
+    """Fit one GP on a subset and return prediction dicts with city/type_of_room labels."""
     model_df = df.select("contract_date", "registration_time").drop_nulls()
+    if len(model_df) < MIN_ROWS_FOR_GP:
+        return []
 
-    gp, scaler, _ = fit_gp_with_calendar(model_df)
+    try:
+        gp, scaler, _ = fit_gp_with_calendar(model_df)
+    except Exception:
+        return []
 
     today = dt.date.today()
     start: dt.date = model_df.get_column("contract_date").min()  # type: ignore[assignment]
@@ -85,12 +94,46 @@ def compute_predictions(
 
     preds = predict_daily(gp, scaler, start, end)
 
-    return preds.with_columns(
+    rows = preds.with_columns(
         pl.col("contract_date").cast(pl.Utf8),
         pl.col("pred_mean").round(1),
         pl.col("pred_lo").round(1),
         pl.col("pred_hi").round(1),
     ).to_dicts()
+
+    for row in rows:
+        row["city"] = city
+        row["type_of_room"] = type_of_room
+
+    return rows
+
+
+def compute_all_predictions(
+    df: pl.DataFrame,
+    horizon_days: int = 730,
+) -> list[dict[str, Any]]:
+    """Fit GP per global / per-city / per-(city, type_of_room) subset and return all predictions."""
+    results: list[dict[str, Any]] = []
+
+    # Global model
+    results.extend(_fit_and_predict(df, horizon_days, None, None))
+
+    # Per-city models
+    for city in sorted(df["city"].unique().to_list()):
+        city_df = df.filter(pl.col("city") == city)
+        results.extend(_fit_and_predict(city_df, horizon_days, city, None))
+
+    # Per-(city, type_of_room) models
+    combos = df.select("city", "type_of_room").unique().sort("city", "type_of_room")
+    for row in combos.iter_rows(named=True):
+        combo_df = df.filter(
+            (pl.col("city") == row["city"]) & (pl.col("type_of_room") == row["type_of_room"])
+        )
+        results.extend(
+            _fit_and_predict(combo_df, horizon_days, row["city"], row["type_of_room"])
+        )
+
+    return results
 
 
 def serialize_recently_rented(df: pl.DataFrame) -> list[dict[str, Any]]:
@@ -125,11 +168,11 @@ def generate(horizon_days: int = 730) -> None:
     console.print(f"[green]✓[/green] {len(df):,} rows  [dim]({date_min} → {date_max})[/dim]")
 
     # ── Step 3: Fit GP + predict ─────────────────────────────────────────────
-    console.print("[bold cyan][3/4][/bold cyan] Fitting GP model and predicting...", end=" ")
-    preds = compute_predictions(df, horizon_days)
-    pred_start = preds[0]["contract_date"]
-    pred_end = preds[-1]["contract_date"]
-    console.print(f"[green]✓[/green] {len(preds):,} days  [dim]({pred_start} → {pred_end})[/dim]")
+    console.print("[bold cyan][3/4][/bold cyan] Fitting GP models (global + per-city + per-combo)...")
+    preds = compute_all_predictions(df, horizon_days)
+    n_models = len({(p["city"], p["type_of_room"]) for p in preds})
+    n_rows = len(preds)
+    console.print(f"  [green]✓[/green] {n_models} models, {n_rows:,} prediction rows")
 
     # ── Step 4: Write JSON ───────────────────────────────────────────────────
     console.print("[bold cyan][4/4][/bold cyan] Writing JSON files...", end=" ")
@@ -152,7 +195,7 @@ def generate(horizon_days: int = 730) -> None:
     summary.add_column(style="dim")
     out = str(OUTPUT_DIR)
     summary.add_row("recently_rented.json", f"{len(rr_data):,} rows", f"{out}/recently_rented.json")
-    summary.add_row("predictions.json", f"{len(preds):,} days", f"{out}/predictions.json")
+    summary.add_row("predictions.json", f"{n_rows:,} rows ({n_models} models)", f"{out}/predictions.json")
     summary.add_row("stats.json", f"{len(stats):,} groups", f"{out}/stats.json")
     console.print(summary)
     console.print()

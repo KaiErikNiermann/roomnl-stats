@@ -10,6 +10,8 @@ export interface RecentlyRented {
 }
 
 export interface Prediction {
+	readonly city: string | null;
+	readonly type_of_room: string | null;
 	readonly contract_date: string;
 	readonly pred_mean: number;
 	readonly pred_lo: number;

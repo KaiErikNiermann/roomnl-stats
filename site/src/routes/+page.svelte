@@ -16,17 +16,33 @@
 			return true;
 		}),
 	);
+
+	const filteredPredictions = $derived.by(() => {
+		const all = data.data.predictions;
+		// Most specific: combo match
+		if (selectedCity && selectedRoomType) {
+			const combo = all.filter((p) => p.city === selectedCity && p.type_of_room === selectedRoomType);
+			if (combo.length > 0) return combo;
+		}
+		// City-level model
+		if (selectedCity) {
+			const city = all.filter((p) => p.city === selectedCity && p.type_of_room === null);
+			if (city.length > 0) return city;
+		}
+		// Global fallback
+		return all.filter((p) => p.city === null && p.type_of_room === null);
+	});
 </script>
 
 <svelte:head>
-	<title>Room.nl Stats</title>
+	<title>room.nl stats</title>
 	<meta name="description" content="Room booking statistics and registration time predictions for Dutch student housing" />
 </svelte:head>
 
 <main style="max-width: 1140px; margin: 0 auto; padding: 40px 24px 60px;">
 	<header style="margin-bottom: 36px;">
 		<h1 style="font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: var(--text-primary);">
-			Room.nl Stats
+			room.nl stats
 		</h1>
 		<p style="margin-top: 8px; font-size: 15px; color: var(--text-muted); line-height: 1.5;">
 			Student housing allocation data and registration time forecasts for the Netherlands.
@@ -44,7 +60,7 @@
 	</section>
 
 	<section style="margin-bottom: 48px;">
-		<ForecastChart predictions={data.data.predictions} observations={filtered} />
+		<ForecastChart predictions={filteredPredictions} observations={filtered} />
 	</section>
 
 	<section style="margin-bottom: 48px;">
