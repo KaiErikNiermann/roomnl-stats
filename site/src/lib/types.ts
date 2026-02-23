@@ -30,10 +30,15 @@ export interface CityStats {
 	readonly pct_priority: number;
 }
 
+export interface SiteMeta {
+	readonly lastUpdated: string;
+}
+
 export interface SiteData {
 	readonly recentlyRented: readonly RecentlyRented[];
 	readonly predictions: readonly Prediction[];
 	readonly stats: readonly CityStats[];
+	readonly meta: SiteMeta | null;
 }
 
 export type SortDirection = 'asc' | 'desc';

@@ -77,5 +77,8 @@
 
 	<footer style="padding-top: 24px; border-top: 1px solid var(--border-light); text-align: center; font-size: 12px; color: var(--text-faint);">
 		Data sourced from room.nl. Updated every 2 weeks. Predictions are estimates, not guarantees.
+		{#if data.data.meta?.lastUpdated}
+			· Last updated {data.data.meta.lastUpdated}.
+		{/if}
 	</footer>
 </main>

@@ -1,6 +1,6 @@
 import { base } from '$app/paths';
 import { match } from 'ts-pattern';
-import type { RecentlyRented, Prediction, CityStats, SiteData } from './types';
+import type { RecentlyRented, Prediction, CityStats, SiteMeta, SiteData } from './types';
 
 function extract<T>(result: PromiseSettledResult<T>, fallback: T): T {
 	return match(result)
@@ -12,16 +12,18 @@ function extract<T>(result: PromiseSettledResult<T>, fallback: T): T {
 export async function loadSiteData(fetchFn: typeof fetch = fetch): Promise<SiteData> {
 	const basePath = `${base}/data`;
 
-	const [rr, pred, stats] = await Promise.allSettled([
+	const [rr, pred, stats, meta] = await Promise.allSettled([
 		fetchFn(`${basePath}/recently_rented.json`).then((r) => r.json() as Promise<RecentlyRented[]>),
 		fetchFn(`${basePath}/predictions.json`).then((r) => r.json() as Promise<Prediction[]>),
 		fetchFn(`${basePath}/stats.json`).then((r) => r.json() as Promise<CityStats[]>),
+		fetchFn(`${basePath}/meta.json`).then((r) => r.json() as Promise<SiteMeta>),
 	]);
 
 	return {
 		recentlyRented: extract(rr, [] as RecentlyRented[]),
 		predictions: extract(pred, [] as Prediction[]),
 		stats: extract(stats, [] as CityStats[]),
+		meta: meta.status === 'fulfilled' ? meta.value : null,
 	};
 }
 

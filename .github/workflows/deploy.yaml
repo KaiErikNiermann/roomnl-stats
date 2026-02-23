@@ -60,6 +60,38 @@ jobs:
           git pull --rebase origin main
           git push
 
+      - name: Create data release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CURR_COUNT=$(python3 -c "import json; print(len(json.load(open('site/static/data/recently_rented.json'))))")
+
+          PREV_COUNT=0
+          PREV_TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            mkdir -p /tmp/prev
+            gh release download "$PREV_TAG" --pattern 'recently_rented.json' --dir /tmp/prev/ 2>/dev/null || true
+            if [ -f /tmp/prev/recently_rented.json ]; then
+              PREV_COUNT=$(python3 -c "import json; print(len(json.load(open('/tmp/prev/recently_rented.json'))))")
+            fi
+          fi
+
+          DIFF=$((CURR_COUNT - PREV_COUNT))
+          DATE=$(date -u +%Y-%m-%d)
+          TAG="data-$DATE"
+
+          gh release create "$TAG" \
+            --title "Data $DATE" \
+            --notes "+${DIFF} datapoints since last release (${CURR_COUNT} total recently rented records)" \
+            --clobber \
+            site/static/data/recently_rented.json \
+            site/static/data/predictions.json \
+            site/static/data/stats.json \
+            data/recently_rented.parquet
+
+      - name: Write build metadata
+        run: echo '{"lastUpdated":"'$(date -u +%Y-%m-%d)'"}' > site/static/data/meta.json
+
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
