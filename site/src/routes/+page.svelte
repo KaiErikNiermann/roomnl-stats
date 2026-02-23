@@ -2,7 +2,7 @@
 	import Filters from '$lib/components/Filters.svelte';
 	import DataTable from '$lib/components/DataTable.svelte';
 	import ForecastChart from '$lib/components/ForecastChart.svelte';
-	import type { RecentlyRented } from '$lib/types';
+	import type { RecentlyRented, Prediction } from '$lib/types';
 
 	const { data } = $props<{ data: import('./$types').PageData }>();
 
@@ -21,16 +21,16 @@
 		const all = data.data.predictions;
 		// Most specific: combo match
 		if (selectedCity && selectedRoomType) {
-			const combo = all.filter((p) => p.city === selectedCity && p.type_of_room === selectedRoomType);
+			const combo = all.filter((p: Prediction) => p.city === selectedCity && p.type_of_room === selectedRoomType);
 			if (combo.length > 0) return combo;
 		}
 		// City-level model
 		if (selectedCity) {
-			const city = all.filter((p) => p.city === selectedCity && p.type_of_room === null);
+			const city = all.filter((p: Prediction) => p.city === selectedCity && p.type_of_room === null);
 			if (city.length > 0) return city;
 		}
 		// Global fallback
-		return all.filter((p) => p.city === null && p.type_of_room === null);
+		return all.filter((p: Prediction) => p.city === null && p.type_of_room === null);
 	});
 </script>
 
