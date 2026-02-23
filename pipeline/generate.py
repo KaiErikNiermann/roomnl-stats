@@ -168,7 +168,7 @@ def generate(horizon_days: int = 730) -> None:
     console.print(f"[green]✓[/green] {len(df):,} rows  [dim]({date_min} → {date_max})[/dim]")
 
     # ── Step 3: Fit GP + predict ─────────────────────────────────────────────
-    console.print("[bold cyan][3/4][/bold cyan] Fitting GP models (global + per-city + per-combo)...")
+    console.print("[bold cyan][3/4][/bold cyan] Fitting GP models (global/city/combo)...")
     preds = compute_all_predictions(df, horizon_days)
     n_models = len({(p["city"], p["type_of_room"]) for p in preds})
     n_rows = len(preds)
@@ -195,7 +195,8 @@ def generate(horizon_days: int = 730) -> None:
     summary.add_column(style="dim")
     out = str(OUTPUT_DIR)
     summary.add_row("recently_rented.json", f"{len(rr_data):,} rows", f"{out}/recently_rented.json")
-    summary.add_row("predictions.json", f"{n_rows:,} rows ({n_models} models)", f"{out}/predictions.json")
+    pred_label = f"{n_rows:,} rows ({n_models} models)"
+    summary.add_row("predictions.json", pred_label, f"{out}/predictions.json")
     summary.add_row("stats.json", f"{len(stats):,} groups", f"{out}/stats.json")
     console.print(summary)
     console.print()
