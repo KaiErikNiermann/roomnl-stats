@@ -47,6 +47,13 @@ build:
 generate:
     poetry run python -m pipeline.generate
 
+# ── Deploy ──────────────────────────────────────────────────
+
+# Trigger the scrape & deploy workflow on GitHub Actions
+deploy:
+    gh workflow run deploy.yaml --repo KaiErikNiermann/roomnl-stats
+    @echo "Workflow triggered. Follow progress at: https://github.com/KaiErikNiermann/roomnl-stats/actions"
+
 # ── CI ──────────────────────────────────────────────────────
 
 # Run all checks (Python + frontend)
