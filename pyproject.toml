@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "roomnl-model"
+version = "0.1.0"
+description = "Room.nl booking stats and GP-based room allocation predictions"
+authors = []
+readme = "README.md"
+packages = [{include = "pipeline"}]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.15"
+polars = ">=1.0"
+pandas = ">=2.0"
+lxml = ">=5.0"
+numpy = ">=1.26"
+scikit-learn = ">=1.4"
+playwright = ">=1.40"
+rich = ">=14.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.3"
+ruff = ">=0.8"
+mypy = ">=1.13"
+radon = ">=6.0"
+pandas-stubs = "^3.0.0.260204"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "TCH"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["sklearn.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,84 @@
+name: Scrape & Deploy
+
+on:
+  schedule:
+    # Every 2 weeks: 1st and 15th of each month at midnight UTC
+    - cron: "0 0 1,15 * *"
+  workflow_dispatch: # manual trigger
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  scrape-and-build:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-deploy-${{ runner.os }}-3.12-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install Python dependencies
+        run: poetry install --no-interaction
+
+      - name: Install Playwright browsers
+        run: poetry run python -m playwright install --with-deps chromium
+
+      - name: Generate data (scrape + model + JSON)
+        run: poetry run python -m pipeline.generate
+
+      - name: Commit updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/recently_rented.parquet site/static/data/
+          git diff --staged --quiet || git commit -m "chore: update scraped data [skip ci]"
+          git push
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: site
+
+      - name: Build static site
+        run: npm run build
+        working-directory: site
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/build
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

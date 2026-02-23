@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+	--font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+	--bg-page: #f8f8fa;
+	--bg-card: #ffffff;
+	--bg-card-alt: #f3f4f6;
+	--bg-input: #ffffff;
+	--bg-hover: rgba(0, 0, 0, 0.035);
+
+	--text-primary: #111113;
+	--text-secondary: #3c3c43;
+	--text-muted: #6e6e80;
+	--text-faint: #a0a0ab;
+
+	--border: #dcdce4;
+	--border-light: #ebebf0;
+	--border-focus: #6366f1;
+
+	--accent: #6366f1;
+	--accent-text: #4f46e5;
+	--accent-muted: rgba(99, 102, 241, 0.1);
+
+	--shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+	--shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+	--shadow-tooltip: 0 4px 16px rgba(0,0,0,0.12);
+
+	--radius-sm: 6px;
+	--radius-md: 10px;
+	--radius-lg: 14px;
+
+	--chart-grid: #ebebf0;
+	--chart-axis-text: #6e6e80;
+	--chart-axis-line: #dcdce4;
+	--chart-dot-stroke: #ffffff;
+}
+
+.dark {
+	--bg-page: #111113;
+	--bg-card: #1c1c1f;
+	--bg-card-alt: #18181b;
+	--bg-input: #141416;
+	--bg-hover: rgba(255, 255, 255, 0.04);
+
+	--text-primary: #ececf1;
+	--text-secondary: #b0b0be;
+	--text-muted: #6e6e80;
+	--text-faint: #45454d;
+
+	--border: #2c2c32;
+	--border-light: #222228;
+	--border-focus: #818cf8;
+
+	--accent: #818cf8;
+	--accent-text: #a5b4fc;
+	--accent-muted: rgba(129, 140, 248, 0.12);
+
+	--shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+	--shadow-md: 0 2px 8px rgba(0,0,0,0.3);
+	--shadow-tooltip: 0 4px 20px rgba(0,0,0,0.5);
+
+	--chart-grid: #222228;
+	--chart-axis-text: #8e8ea0;
+	--chart-axis-line: #2c2c32;
+	--chart-dot-stroke: #111113;
+}
+
+html {
+	background-color: var(--bg-page);
+	color: var(--text-primary);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { height: 6px; width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }

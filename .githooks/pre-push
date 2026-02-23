@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+echo "=== Python: ruff check ==="
+poetry run ruff check pipeline/ tests/
+
+echo "=== Python: ruff format ==="
+poetry run ruff format --check pipeline/ tests/
+
+echo "=== Python: mypy ==="
+poetry run mypy pipeline/
+
+echo "=== Python: pytest ==="
+poetry run pytest tests/ -x -q
+
+echo "=== Python: radon complexity ==="
+poetry run radon cc pipeline/ -a -nb
+
+echo "=== Frontend: eslint ==="
+(cd site && npm run lint)
+
+echo "=== Frontend: svelte-check ==="
+(cd site && npm run check)
+
+echo "=== Frontend: build ==="
+(cd site && npm run build)
+
+echo "All checks passed."
