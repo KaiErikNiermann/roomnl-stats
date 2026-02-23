@@ -61,6 +61,7 @@ automerge-dependabot:
         echo "No open dependabot PRs."
         exit 0
     fi
+    failed=0
     for pr in $prs; do
         title=$(gh pr view "$pr" --json title --jq '.title')
         # Check all CI checks passed
@@ -68,14 +69,18 @@ automerge-dependabot:
         case "$status" in
             pass)
                 echo "✓ PR #${pr}: ${title} — merging"
-                gh pr merge "$pr" --squash --auto --delete-branch
+                gh pr merge "$pr" --squash --delete-branch
                 ;;
             pending)
-                echo "⏳ PR #${pr}: ${title} — checks still running, enabling auto-merge"
-                gh pr merge "$pr" --squash --auto --delete-branch
+                echo "⏳ PR #${pr}: ${title} — checks still running, skipping"
                 ;;
             *)
                 echo "✗ PR #${pr}: ${title} — checks failed, skipping"
+                failed=$((failed + 1))
                 ;;
         esac
     done
+    if [ "$failed" -gt 0 ]; then
+        echo "${failed} PR(s) had failing checks."
+        exit 1
+    fi
