@@ -27,7 +27,7 @@
 	let showChart = $state(false);
 
 	$effect(() => {
-		const mq = window.matchMedia('(max-width: 768px)');
+		const mq = globalThis.matchMedia('(max-width: 768px)');
 		isMobile = mq.matches;
 		const handler = (e: MediaQueryListEvent) => { isMobile = e.matches; };
 		mq.addEventListener('change', handler);
