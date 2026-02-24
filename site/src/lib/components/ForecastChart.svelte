@@ -23,6 +23,16 @@
 	let savedTimer: ReturnType<typeof setTimeout> | null = null;
 	let svgEl: SVGSVGElement | null = $state(null);
 	let resetZoom: (() => void) | null = $state(null);
+	let isMobile = $state(false);
+	let showChart = $state(false);
+
+	$effect(() => {
+		const mq = window.matchMedia('(max-width: 768px)');
+		isMobile = mq.matches;
+		const handler = (e: MediaQueryListEvent) => { isMobile = e.matches; };
+		mq.addEventListener('change', handler);
+		return () => mq.removeEventListener('change', handler);
+	});
 
 	const margin = { top: 20, right: 65, bottom: 35, left: 60 };
 	const chartHeight = 460;
@@ -531,9 +541,30 @@
 </script>
 
 <div>
-	<h2 style="margin-bottom: 8px; font-size: 18px; font-weight: 600; color: var(--text-primary);">
-		Registration Time Forecast
-	</h2>
+	<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+		<h2 style="margin-bottom: 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">
+			Registration Time Forecast
+		</h2>
+		{#if isMobile}
+			<button
+				onclick={() => (showChart = !showChart)}
+				style="
+					padding: 7px 16px;
+					font-size: 13px; font-family: var(--font-sans); font-weight: 500;
+					border-radius: var(--radius-md);
+					border: 1px solid var(--border);
+					background: var(--bg-card);
+					color: var(--text-primary);
+					cursor: pointer;
+					box-shadow: var(--shadow-sm);
+				"
+			>
+				{showChart ? 'Hide graph' : 'Show forecast graph'}
+			</button>
+		{/if}
+	</div>
+
+	{#if !isMobile || showChart}
 	<p style="margin-bottom: 20px; font-size: 14px; color: var(--text-muted); line-height: 1.6;">
 		GP model prediction with 95% CI. Red dashed = your registration time.
 		Red solid = probability (right axis). Drag to pan, scroll to zoom.
@@ -651,34 +682,70 @@
 	</div>
 
 	<!-- Chart -->
-	<div style="position: relative; width: 100%; min-height: {chartHeight}px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-light); background: var(--bg-card);">
-		<svg bind:this={svgEl} style="width: 100%; display: block; touch-action: pan-y;"></svg>
-		{#if resetZoom}
-			<button
-				onclick={resetZoom}
-				title="Reset zoom"
-				style="
-					position: absolute; top: 10px; right: 10px;
-					display: flex; align-items: center; justify-content: center;
-					height: 30px; padding: 0 10px; gap: 5px;
-					font-size: 12px; font-family: var(--font-sans); font-weight: 500;
-					border-radius: var(--radius-sm);
-					border: 1px solid var(--border);
-					background: var(--bg-card);
-					color: var(--text-muted);
-					box-shadow: var(--shadow-sm);
-					cursor: pointer;
-					transition: all 0.15s;
-				"
-				onmouseenter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent)'; }}
-				onmouseleave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
-			>
-				<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-					<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-					<path d="M3 3v5h5"/>
-				</svg>
-				Reset
-			</button>
-		{/if}
-	</div>
+	{#if isMobile}
+		<div style="overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-lg);">
+			<div style="min-width: 600px; position: relative; min-height: {chartHeight}px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-light); background: var(--bg-card);">
+				<svg bind:this={svgEl} style="width: 100%; display: block; touch-action: pan-y;"></svg>
+				{#if resetZoom}
+					<button
+						onclick={resetZoom}
+						title="Reset zoom"
+						style="
+							position: absolute; top: 10px; right: 10px;
+							display: flex; align-items: center; justify-content: center;
+							height: 30px; padding: 0 10px; gap: 5px;
+							font-size: 12px; font-family: var(--font-sans); font-weight: 500;
+							border-radius: var(--radius-sm);
+							border: 1px solid var(--border);
+							background: var(--bg-card);
+							color: var(--text-muted);
+							box-shadow: var(--shadow-sm);
+							cursor: pointer;
+							transition: all 0.15s;
+						"
+						onmouseenter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent)'; }}
+						onmouseleave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
+					>
+						<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+							<path d="M3 3v5h5"/>
+						</svg>
+						Reset
+					</button>
+				{/if}
+			</div>
+		</div>
+	{:else}
+		<div style="position: relative; width: 100%; min-height: {chartHeight}px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border-light); background: var(--bg-card);">
+			<svg bind:this={svgEl} style="width: 100%; display: block; touch-action: pan-y;"></svg>
+			{#if resetZoom}
+				<button
+					onclick={resetZoom}
+					title="Reset zoom"
+					style="
+						position: absolute; top: 10px; right: 10px;
+						display: flex; align-items: center; justify-content: center;
+						height: 30px; padding: 0 10px; gap: 5px;
+						font-size: 12px; font-family: var(--font-sans); font-weight: 500;
+						border-radius: var(--radius-sm);
+						border: 1px solid var(--border);
+						background: var(--bg-card);
+						color: var(--text-muted);
+						box-shadow: var(--shadow-sm);
+						cursor: pointer;
+						transition: all 0.15s;
+					"
+					onmouseenter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent)'; }}
+					onmouseleave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
+				>
+					<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+						<path d="M3 3v5h5"/>
+					</svg>
+					Reset
+				</button>
+			{/if}
+		</div>
+	{/if}
+	{/if}
 </div>
