@@ -13,11 +13,29 @@
 	}
 	const { stats, observations, selectedCity, selectedRoomType }: Props = $props();
 
-	const mapHeight = 520;
 	const margin = { top: 10, right: 10, bottom: 10, left: 10 };
 
 	let svgEl: SVGSVGElement;
 	let resetZoom: (() => void) | null = $state(null);
+	let wrapperEl: HTMLDivElement | null = $state(null);
+	let containerWidth = $state(0);
+
+	const mapHeight = $derived(
+		containerWidth > 0 && containerWidth < 600
+			? Math.max(360, Math.round(containerWidth * 0.9))
+			: 520,
+	);
+
+	$effect(() => {
+		if (!wrapperEl) return;
+		const ro = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				containerWidth = entry.contentRect.width;
+			}
+		});
+		ro.observe(wrapperEl);
+		return () => ro.disconnect();
+	});
 
 	// module-level cached GeoJSON promise
 	interface GeoFeature { type: string; properties: Record<string, unknown>; geometry: d3.GeoGeometryObjects }
@@ -81,7 +99,7 @@
 		if (!svgEl) return;
 		const data = cityData;
 
-		const containerW = svgEl.parentElement?.clientWidth ?? 600;
+		const containerW = containerWidth || svgEl.parentElement?.clientWidth || 600;
 		const innerW = containerW - margin.left - margin.right;
 		const innerH = mapHeight - margin.top - margin.bottom;
 
@@ -358,7 +376,7 @@
 	});
 </script>
 
-<div>
+<div bind:this={wrapperEl}>
 	<h2 style="margin-bottom: 8px; font-size: 18px; font-weight: 600; color: var(--text-primary);">
 		Wait Time Map
 	</h2>

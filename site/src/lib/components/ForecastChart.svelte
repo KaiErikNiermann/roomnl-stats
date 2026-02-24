@@ -25,6 +25,8 @@
 	let resetZoom: (() => void) | null = $state(null);
 	let isMobile = $state(false);
 	let showChart = $state(false);
+	let wrapperEl: HTMLDivElement | null = $state(null);
+	let containerWidth = $state(0);
 
 	$effect(() => {
 		const mq = globalThis.matchMedia('(max-width: 768px)');
@@ -32,6 +34,17 @@
 		const handler = (e: MediaQueryListEvent) => { isMobile = e.matches; };
 		mq.addEventListener('change', handler);
 		return () => mq.removeEventListener('change', handler);
+	});
+
+	$effect(() => {
+		if (!wrapperEl) return;
+		const ro = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				containerWidth = entry.contentRect.width;
+			}
+		});
+		ro.observe(wrapperEl);
+		return () => ro.disconnect();
 	});
 
 	const margin = { top: 20, right: 65, bottom: 35, left: 60 };
@@ -125,7 +138,7 @@
 		const svg = d3.select(svgEl);
 		svg.selectAll('*').remove();
 
-		const parentWidth = svgEl.parentElement?.clientWidth ?? 900;
+		const parentWidth = containerWidth || svgEl.parentElement?.clientWidth || 900;
 		const width = parentWidth;
 		const innerW = width - margin.left - margin.right;
 		const innerH = chartHeight - margin.top - margin.bottom;
@@ -540,7 +553,7 @@
 	});
 </script>
 
-<div>
+<div bind:this={wrapperEl}>
 	<div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
 		<h2 style="margin-bottom: 0; font-size: 18px; font-weight: 600; color: var(--text-primary);">
 			Registration Time Forecast
@@ -563,12 +576,6 @@
 			</button>
 		{/if}
 	</div>
-
-	{#if !isMobile || showChart}
-	<p style="margin-bottom: 20px; font-size: 14px; color: var(--text-muted); line-height: 1.6;">
-		GP model prediction with 95% CI. Red dashed = your registration time.
-		Red solid = probability (right axis). Drag to pan, scroll to zoom.
-	</p>
 
 	<!-- Controls -->
 	<div style="
@@ -640,6 +647,12 @@
 			</span>
 		</div>
 	</div>
+
+	{#if !isMobile || showChart}
+	<p style="margin-bottom: 20px; font-size: 14px; color: var(--text-muted); line-height: 1.6;">
+		GP model prediction with 95% CI. Red dashed = your registration time.
+		Red solid = probability (right axis). Drag to pan, scroll to zoom.
+	</p>
 
 	<!-- Legend -->
 	<div style="
