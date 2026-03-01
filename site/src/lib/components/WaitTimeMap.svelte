@@ -98,6 +98,8 @@
 	$effect(() => {
 		if (!svgEl) return;
 		const data = cityData;
+		let stale = false;
+		let tooltipEl: d3.Selection<Element, unknown, Element, unknown> | null = null;
 
 		const containerW = containerWidth || svgEl.parentElement?.clientWidth || 600;
 		const innerW = containerW - margin.left - margin.right;
@@ -109,9 +111,9 @@
 			.attr('height', mapHeight)
 			.attr('viewBox', `0 0 ${containerW} ${mapHeight}`);
 
-		svg.selectAll('*').remove();
-
 		loadGeo().then((geo) => {
+			if (stale) return;
+			svg.selectAll('*').remove();
 			const projection = d3.geoMercator().fitSize([innerW, innerH], geo as unknown as d3.GeoPermissibleObjects);
 			const pathGen = d3.geoPath(projection);
 
@@ -169,6 +171,7 @@
 				.style('background', 'var(--bg-card)')
 				.style('border', '1px solid var(--border)')
 				.style('color', 'var(--text-primary)');
+			tooltipEl = tooltip;
 
 			// Voronoi cells — use .style() with CSS vars for theme colors
 			g.selectAll('path.cell')
@@ -363,15 +366,12 @@
 			resetZoom = () => {
 				svg.transition().duration(300).call(zoom.transform, d3.zoomIdentity);
 			};
-
-			return () => {
-				tooltip.remove();
-			};
 		});
 
-		// eslint-disable-next-line unicorn/consistent-function-scoping
 		return () => {
+			stale = true;
 			resetZoom = null;
+			tooltipEl?.remove();
 		};
 	});
 </script>
