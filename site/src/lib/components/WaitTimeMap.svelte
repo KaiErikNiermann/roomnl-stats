@@ -99,7 +99,7 @@
 		if (!svgEl) return;
 		const data = cityData;
 		let stale = false;
-		let tooltipEl: d3.Selection<Element, unknown, Element, unknown> | null = null;
+		let tooltipEl: d3.Selection<HTMLDivElement, unknown, null, undefined> | null = null;
 
 		const containerW = containerWidth || svgEl.parentElement?.clientWidth || 600;
 		const innerW = containerW - margin.left - margin.right;
