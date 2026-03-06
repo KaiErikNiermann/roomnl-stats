@@ -240,233 +240,239 @@
 				.toSorted((a, b) => a.date.getTime() - b.date.getTime()),
 		}));
 
-		function draw(x: d3.ScaleTime<number, number>) {
-			chart.selectAll('.ci').remove();
-			chart.selectAll('.gp-mean').remove();
-			chart.selectAll('.my-reg').remove();
-			chart.selectAll('.prob-line').remove();
-			chart.selectAll('.city-trend').remove();
-			chart.selectAll('.obs-dot').remove();
-			chart.selectAll('.today-line').remove();
-			chart.selectAll('.half-line').remove();
+		// Mutable x scale reference for tooltip bisectors
+		let currentX: d3.ScaleTime<number, number> = xBase;
+		const positionUpdates: Array<(x: d3.ScaleTime<number, number>) => void> = [];
 
-			if (predData.length > 0) {
-				const lineGen = d3
-					.line<(typeof predData)[number]>()
-					.x((d) => x(d.date))
-					.y((d) => yL(d.mean))
-					.curve(d3.curveBasis);
+		// Path generators (y fixed, x set per draw call)
+		const ciAreaGen = d3
+			.area<(typeof predData)[number]>()
+			.y0((d) => yL(d.lo))
+			.y1((d) => yL(d.hi))
+			.curve(d3.curveBasis);
+		const gpLineGen = d3
+			.line<(typeof predData)[number]>()
+			.y((d) => yL(d.mean))
+			.curve(d3.curveBasis);
 
-				chart
-					.append('path')
-					.attr('class', 'ci')
-					.datum(predData)
-					.attr('fill', '#6366f1')
-					.attr('fill-opacity', 0.18)
-					.attr(
-						'd',
-						d3
-							.area<(typeof predData)[number]>()
-							.x((d) => x(d.date))
-							.y0((d) => yL(d.lo))
-							.y1((d) => yL(d.hi))
-							.curve(d3.curveBasis),
+		// --- Create elements once, register position updaters ---
+
+		if (predData.length > 0) {
+			const ciPath = chart
+				.append('path')
+				.attr('class', 'ci')
+				.datum(predData)
+				.attr('fill', '#6366f1')
+				.attr('fill-opacity', 0.18);
+
+			const gpMeanPath = chart
+				.append('path')
+				.attr('class', 'gp-mean')
+				.datum(predData)
+				.attr('fill', 'none')
+				.attr('stroke', '#818cf8')
+				.attr('stroke-width', 2)
+				.attr('stroke-dasharray', '6 3');
+
+			// invisible wide hit area for GP mean tooltip
+			const bisect = d3.bisector<(typeof predData)[number], Date>((d) => d.date).left;
+			const gpMeanHit = chart
+				.append('path')
+				.attr('class', 'gp-mean')
+				.datum(predData)
+				.attr('fill', 'none')
+				.attr('stroke', 'transparent')
+				.attr('stroke-width', 14)
+				.style('cursor', 'crosshair')
+				.on('mousemove', (event: MouseEvent) => {
+					const [mx] = d3.pointer(event);
+					const dateAtMouse = currentX.invert(mx);
+					const idx = Math.min(
+						bisect(predData, dateAtMouse),
+						predData.length - 1,
 					);
-
-				chart
-					.append('path')
-					.attr('class', 'gp-mean')
-					.datum(predData)
-					.attr('fill', 'none')
-					.attr('stroke', '#818cf8')
-					.attr('stroke-width', 2)
-					.attr('stroke-dasharray', '6 3')
-					.attr('d', lineGen);
-
-				// invisible wide hit area for GP mean tooltip
-				const bisect = d3.bisector<(typeof predData)[number], Date>((d) => d.date).left;
-				chart
-					.append('path')
-					.attr('class', 'gp-mean')
-					.datum(predData)
-					.attr('fill', 'none')
-					.attr('stroke', 'transparent')
-					.attr('stroke-width', 14)
-					.attr('d', lineGen)
-					.style('cursor', 'crosshair')
-					.on('mousemove', (event: MouseEvent) => {
-						const [mx] = d3.pointer(event);
-						const dateAtMouse = x.invert(mx);
-						const idx = Math.min(
-							bisect(predData, dateAtMouse),
-							predData.length - 1,
-						);
-						const p = predData[idx] as (typeof predData)[number] | undefined;
-						if (!p) return;
-						tooltip
-							.style('opacity', '1')
-							.html(
-								`<strong style="font-size:13px;">GP Prediction</strong><br/>` +
-									`<span style="color:${themeAxisText};">${p.date.toLocaleDateString('en-NL')}</span><br/>` +
-									`Mean: <strong>${p.mean.toFixed(2)}d</strong> (${formatDays(Math.round(p.mean))})<br/>` +
-									`95% CI: ${p.lo.toFixed(2)}d – ${p.hi.toFixed(2)}d`,
-							);
-						tooltip
-							.style('left', `${String(event.clientX + 14)}px`)
-							.style('top', `${String(event.clientY - 60)}px`);
-					})
-					.on('mouseleave', () => {
-						tooltip.style('opacity', '0');
-					});
-			}
-
-			if (myRegLine.length > 0) {
-				chart
-					.append('path')
-					.attr('class', 'my-reg')
-					.datum(myRegLine)
-					.attr('fill', 'none')
-					.attr('stroke', '#ef4444')
-					.attr('stroke-width', 2)
-					.attr('stroke-dasharray', '8 4')
-					.attr(
-						'd',
-						d3
-							.line<(typeof myRegLine)[number]>()
-							.x((d) => x(d.date))
-							.y((d) => yL(d.myTime)),
-					);
-			}
-
-			if (probLine.length > 0) {
-				const probLineGen = d3
-					.line<(typeof probLine)[number]>()
-					.x((d) => x(d.date))
-					.y((d) => yR(d.prob))
-					.curve(d3.curveBasis);
-
-				chart
-					.append('path')
-					.attr('class', 'prob-line')
-					.datum(probLine)
-					.attr('fill', 'none')
-					.attr('stroke', '#ef4444')
-					.attr('stroke-width', 1.8)
-					.attr('d', probLineGen);
-
-				// invisible wide hit area for prob line tooltip
-				const bisectProb = d3.bisector<(typeof probLine)[number], Date>((d) => d.date).left;
-				chart
-					.append('path')
-					.attr('class', 'prob-line')
-					.datum(probLine)
-					.attr('fill', 'none')
-					.attr('stroke', 'transparent')
-					.attr('stroke-width', 14)
-					.attr('d', probLineGen)
-					.style('cursor', 'crosshair')
-					.on('mousemove', (event: MouseEvent) => {
-						const [mx] = d3.pointer(event);
-						const dateAtMouse = x.invert(mx);
-						const idx = Math.min(bisectProb(probLine, dateAtMouse), probLine.length - 1);
-						const p = probLine[idx] as (typeof probLine)[number] | undefined;
-						if (!p) return;
-						tooltip
-							.style('opacity', '1')
-							.html(
-								`<strong style="font-size:13px;">Probability</strong><br/>` +
-									`<span style="color:${themeAxisText};">${p.date.toLocaleDateString('en-NL')}</span><br/>` +
-									`P(&#8805; required): <strong style="color:#ef4444;">${p.prob.toFixed(1)}%</strong>`,
-							);
-						tooltip
-							.style('left', `${String(event.clientX + 14)}px`)
-							.style('top', `${String(event.clientY - 60)}px`);
-					})
-					.on('mouseleave', () => {
-						tooltip.style('opacity', '0');
-					});
-			}
-
-			for (const trend of cityTrends) {
-				chart
-					.append('path')
-					.attr('class', 'city-trend')
-					.datum(trend.points)
-					.attr('fill', 'none')
-					.attr('stroke', color(trend.city))
-					.attr('stroke-width', 1.2)
-					.attr('stroke-opacity', 0.5)
-					.attr(
-						'd',
-						d3
-							.line<(typeof trend.points)[number]>()
-							.x((d) => x(d.date))
-							.y((d) => yL(d.median))
-							.curve(d3.curveBasis),
-					);
-			}
-
-			chart
-				.selectAll('.obs-dot')
-				.data(obsData)
-				.join('circle')
-				.attr('class', 'obs-dot')
-				.attr('cx', (d) => x(d.date))
-				.attr('cy', (d) => yL(d.regTime))
-				.attr('r', 2.5)
-				.attr('fill', (d) => color(d.city))
-				.attr('fill-opacity', 0.35)
-				.attr('stroke', themeDotStroke)
-				.attr('stroke-width', 0.4)
-				.on('mouseenter', (event: MouseEvent, d) => {
+					const p = predData[idx] as (typeof predData)[number] | undefined;
+					if (!p) return;
 					tooltip
 						.style('opacity', '1')
 						.html(
-							`<strong style="font-size:13px;">${d.city}</strong><br/>` +
-								`<span style="color:${themeAxisText};">${d.date.toLocaleDateString('en-NL')}</span><br/>` +
-								`Reg. time: <strong>${formatDays(d.regTime)}</strong>`,
+							`<strong style="font-size:13px;">GP Prediction</strong><br/>` +
+								`<span style="color:${themeAxisText};">${p.date.toLocaleDateString('en-NL')}</span><br/>` +
+								`Mean: <strong>${p.mean.toFixed(2)}d</strong> (${formatDays(Math.round(p.mean))})<br/>` +
+								`95% CI: ${p.lo.toFixed(2)}d – ${p.hi.toFixed(2)}d`,
 						);
-					d3.select(event.currentTarget as SVGCircleElement)
-						.attr('r', 5)
-						.attr('fill-opacity', 1)
-						.attr('stroke-width', 1.5);
-				})
-				.on('mousemove', (event: MouseEvent) => {
 					tooltip
 						.style('left', `${String(event.clientX + 14)}px`)
 						.style('top', `${String(event.clientY - 60)}px`);
 				})
-				.on('mouseleave', (event: MouseEvent) => {
+				.on('mouseleave', () => {
 					tooltip.style('opacity', '0');
-					d3.select(event.currentTarget as SVGCircleElement)
-						.attr('r', 2.5)
-						.attr('fill-opacity', 0.35)
-						.attr('stroke-width', 0.4);
 				});
 
-			const today = new Date();
-			if (today >= xExtent[0] && today <= xExtent[1]) {
-				chart
-					.append('line')
-					.attr('class', 'today-line')
-					.attr('x1', x(today))
-					.attr('x2', x(today))
-					.attr('y1', 0)
-					.attr('y2', innerH)
-					.attr('stroke', '#fbbf24')
-					.attr('stroke-width', 1.5)
-					.attr('stroke-dasharray', '4 4');
-			}
+			positionUpdates.push((x) => {
+				ciPath.attr('d', ciAreaGen.x((d) => x(d.date)));
+				gpMeanPath.attr('d', gpLineGen.x((d) => x(d.date)));
+				gpMeanHit.attr('d', gpLineGen);
+			});
+		}
 
+		if (myRegLine.length > 0) {
+			const myRegLineGen = d3
+				.line<(typeof myRegLine)[number]>()
+				.y((d) => yL(d.myTime));
+			const myRegPath = chart
+				.append('path')
+				.attr('class', 'my-reg')
+				.datum(myRegLine)
+				.attr('fill', 'none')
+				.attr('stroke', '#ef4444')
+				.attr('stroke-width', 2)
+				.attr('stroke-dasharray', '8 4');
+
+			positionUpdates.push((x) => {
+				myRegPath.attr('d', myRegLineGen.x((d) => x(d.date)));
+			});
+		}
+
+		if (probLine.length > 0) {
+			const probLineGen = d3
+				.line<(typeof probLine)[number]>()
+				.y((d) => yR(d.prob))
+				.curve(d3.curveBasis);
+
+			const probPath = chart
+				.append('path')
+				.attr('class', 'prob-line')
+				.datum(probLine)
+				.attr('fill', 'none')
+				.attr('stroke', '#ef4444')
+				.attr('stroke-width', 1.8);
+
+			// invisible wide hit area for prob line tooltip
+			const bisectProb = d3.bisector<(typeof probLine)[number], Date>((d) => d.date).left;
+			const probHit = chart
+				.append('path')
+				.attr('class', 'prob-line')
+				.datum(probLine)
+				.attr('fill', 'none')
+				.attr('stroke', 'transparent')
+				.attr('stroke-width', 14)
+				.style('cursor', 'crosshair')
+				.on('mousemove', (event: MouseEvent) => {
+					const [mx] = d3.pointer(event);
+					const dateAtMouse = currentX.invert(mx);
+					const idx = Math.min(bisectProb(probLine, dateAtMouse), probLine.length - 1);
+					const p = probLine[idx] as (typeof probLine)[number] | undefined;
+					if (!p) return;
+					tooltip
+						.style('opacity', '1')
+						.html(
+							`<strong style="font-size:13px;">Probability</strong><br/>` +
+								`<span style="color:${themeAxisText};">${p.date.toLocaleDateString('en-NL')}</span><br/>` +
+								`P(&#8805; required): <strong style="color:#ef4444;">${p.prob.toFixed(1)}%</strong>`,
+						);
+					tooltip
+						.style('left', `${String(event.clientX + 14)}px`)
+						.style('top', `${String(event.clientY - 60)}px`);
+				})
+				.on('mouseleave', () => {
+					tooltip.style('opacity', '0');
+				});
+
+			positionUpdates.push((x) => {
+				probPath.attr('d', probLineGen.x((d) => x(d.date)));
+				probHit.attr('d', probLineGen);
+			});
+		}
+
+		const trendLineGen = d3
+			.line<(typeof cityTrends)[number]['points'][number]>()
+			.y((d) => yL(d.median))
+			.curve(d3.curveBasis);
+		const trendPaths = cityTrends.map((trend) =>
 			chart
+				.append('path')
+				.attr('class', 'city-trend')
+				.datum(trend.points)
+				.attr('fill', 'none')
+				.attr('stroke', color(trend.city))
+				.attr('stroke-width', 1.2)
+				.attr('stroke-opacity', 0.5),
+		);
+		positionUpdates.push((x) => {
+			trendLineGen.x((d) => x(d.date));
+			for (const tp of trendPaths) tp.attr('d', trendLineGen as never);
+		});
+
+		const obsDots = chart
+			.selectAll('.obs-dot')
+			.data(obsData)
+			.join('circle')
+			.attr('class', 'obs-dot')
+			.attr('cy', (d) => yL(d.regTime))
+			.attr('r', 2.5)
+			.attr('fill', (d) => color(d.city))
+			.attr('fill-opacity', 0.35)
+			.attr('stroke', themeDotStroke)
+			.attr('stroke-width', 0.4)
+			.on('mouseenter', (event: MouseEvent, d) => {
+				tooltip
+					.style('opacity', '1')
+					.html(
+						`<strong style="font-size:13px;">${d.city}</strong><br/>` +
+							`<span style="color:${themeAxisText};">${d.date.toLocaleDateString('en-NL')}</span><br/>` +
+							`Reg. time: <strong>${formatDays(d.regTime)}</strong>`,
+					);
+				d3.select(event.currentTarget as SVGCircleElement)
+					.attr('r', 5)
+					.attr('fill-opacity', 1)
+					.attr('stroke-width', 1.5);
+			})
+			.on('mousemove', (event: MouseEvent) => {
+				tooltip
+					.style('left', `${String(event.clientX + 14)}px`)
+					.style('top', `${String(event.clientY - 60)}px`);
+			})
+			.on('mouseleave', (event: MouseEvent) => {
+				tooltip.style('opacity', '0');
+				d3.select(event.currentTarget as SVGCircleElement)
+					.attr('r', 2.5)
+					.attr('fill-opacity', 0.35)
+					.attr('stroke-width', 0.4);
+			});
+		positionUpdates.push((x) => {
+			obsDots.attr('cx', (d) => x(d.date));
+		});
+
+		const today = new Date();
+		if (today >= xExtent[0] && today <= xExtent[1]) {
+			const todayLine = chart
 				.append('line')
-				.attr('class', 'half-line')
-				.attr('x1', 0)
-				.attr('x2', innerW)
-				.attr('y1', yR(50))
-				.attr('y2', yR(50))
-				.attr('stroke', '#52525b')
-				.attr('stroke-dasharray', '3 3');
+				.attr('class', 'today-line')
+				.attr('y1', 0)
+				.attr('y2', innerH)
+				.attr('stroke', '#fbbf24')
+				.attr('stroke-width', 1.5)
+				.attr('stroke-dasharray', '4 4');
+			positionUpdates.push((x) => {
+				todayLine.attr('x1', x(today)).attr('x2', x(today));
+			});
+		}
+
+		chart
+			.append('line')
+			.attr('class', 'half-line')
+			.attr('x1', 0)
+			.attr('x2', innerW)
+			.attr('y1', yR(50))
+			.attr('y2', yR(50))
+			.attr('stroke', '#52525b')
+			.attr('stroke-dasharray', '3 3');
+
+		// Lightweight position update — only updates x-dependent attributes
+		function draw(x: d3.ScaleTime<number, number>) {
+			currentX = x;
+			for (const update of positionUpdates) update(x);
 		}
 
 		// axes
