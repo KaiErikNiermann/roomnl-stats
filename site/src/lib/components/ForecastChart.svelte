@@ -242,7 +242,7 @@
 
 		// Mutable x scale reference for tooltip bisectors
 		let currentX: d3.ScaleTime<number, number> = xBase;
-		const positionUpdates: Array<(x: d3.ScaleTime<number, number>) => void> = [];
+		const positionUpdates: ((x: d3.ScaleTime<number, number>) => void)[] = [];
 
 		// Path generators (y fixed, x set per draw call)
 		const ciAreaGen = d3
