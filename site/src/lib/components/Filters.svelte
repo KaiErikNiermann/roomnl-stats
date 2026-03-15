@@ -14,7 +14,7 @@
 
 	const cities = $derived(uniqueValues(data, 'city'));
 	const roomTypes = $derived(
-		[...new Set(uniqueValues(data, 'type_of_room').map(canonicalRoomType))].toSorted(),
+		[...new Set(uniqueValues(data, 'type_of_room').map((rt) => canonicalRoomType(rt)))].toSorted(),
 	);
 </script>
 
