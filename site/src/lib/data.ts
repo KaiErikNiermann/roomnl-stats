@@ -31,6 +31,23 @@ export function uniqueValues<T, K extends keyof T>(items: readonly T[], key: K):
 	return [...new Set(items.map((item) => item[key]))].toSorted() as T[K][];
 }
 
+/** Maps Dutch room type values to their English canonical name. */
+const ROOM_TYPE_CANONICAL: Record<string, string> = {
+	Gemeubileerd: 'Furnished',
+	Gestoffeerd: 'Upholstered',
+	'Zelf inrichten': 'Unfurnished (self-furnish)',
+};
+
+/** Returns the canonical English label for a room type value. */
+export function canonicalRoomType(raw: string): string {
+	return ROOM_TYPE_CANONICAL[raw] ?? raw;
+}
+
+/** Checks whether a raw room type value matches the selected canonical label. */
+export function roomTypeMatches(raw: string, selected: string): boolean {
+	return canonicalRoomType(raw) === selected;
+}
+
 export function formatDays(days: number): string {
 	const years = Math.floor(days / 365);
 	const months = Math.floor((days % 365) / 30);

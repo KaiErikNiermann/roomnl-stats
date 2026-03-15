@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as d3 from 'd3';
 	import { base } from '$app/paths';
-	import { formatDays } from '$lib/data';
+	import { formatDays, roomTypeMatches } from '$lib/data';
 	import { CITY_COORDS, type CityMapDatum } from '$lib/geo';
 	import type { CityStats, RecentlyRented } from '$lib/types';
 
@@ -56,7 +56,7 @@
 		if (selectedRoomType) {
 			perCity = new Map(
 				stats
-					.filter((s) => s.type_of_room === selectedRoomType)
+					.filter((s) => roomTypeMatches(s.type_of_room, selectedRoomType))
 					.map((s) => [s.city, { median: s.median_reg_days, count: s.count, mean: s.mean_reg_days }]),
 			);
 		} else {

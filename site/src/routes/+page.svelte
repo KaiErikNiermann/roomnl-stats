@@ -4,6 +4,7 @@
 	import ForecastChart from '$lib/components/ForecastChart.svelte';
 	import WaitTimeMap from '$lib/components/WaitTimeMap.svelte';
 	import type { RecentlyRented, Prediction } from '$lib/types';
+	import { roomTypeMatches } from '$lib/data';
 
 	const { data } = $props<{ data: import('./$types').PageData }>();
 
@@ -13,7 +14,7 @@
 	const filtered: RecentlyRented[] = $derived(
 		data.data.recentlyRented.filter((row: RecentlyRented) => {
 			if (selectedCity && row.city !== selectedCity) return false;
-			if (selectedRoomType && row.type_of_room !== selectedRoomType) return false;
+			if (selectedRoomType && !roomTypeMatches(row.type_of_room, selectedRoomType)) return false;
 			return true;
 		}),
 	);
@@ -22,7 +23,7 @@
 		const all = data.data.predictions;
 		// Most specific: combo match
 		if (selectedCity && selectedRoomType) {
-			const combo = all.filter((p: Prediction) => p.city === selectedCity && p.type_of_room === selectedRoomType);
+			const combo = all.filter((p: Prediction) => p.city === selectedCity && p.type_of_room !== null && roomTypeMatches(p.type_of_room, selectedRoomType));
 			if (combo.length > 0) return combo;
 		}
 		// City-level model
