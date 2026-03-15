@@ -14,6 +14,12 @@
 
 	const cities = $derived(uniqueValues(data, 'city'));
 	const roomTypes = $derived(uniqueValues(data, 'type_of_room'));
+
+	const ROOM_TYPE_LABELS: Record<string, string> = {
+		'Gemeubileerd': 'Furnished',
+		'Gestoffeerd': 'Upholstered',
+		'Zelf inrichten': 'Unfurnished (self-furnish)',
+	};
 </script>
 
 <div style="display: flex; flex-wrap: wrap; gap: 16px;">
@@ -68,7 +74,7 @@
 		>
 			<option value="">All types</option>
 			{#each roomTypes as rt (rt)}
-				<option value={rt}>{rt}</option>
+				<option value={rt}>{ROOM_TYPE_LABELS[rt] ?? rt}</option>
 			{/each}
 		</select>
 	</label>
