@@ -2,13 +2,13 @@
   {
     "city": "'s-Gravenhage",
     "type_of_room": "Unfurnished",
-    "count": 222,
-    "median_reg_days": 1250.5,
-    "mean_reg_days": 1403.7207207207207,
+    "count": 236,
+    "median_reg_days": 1348.0,
+    "mean_reg_days": 1436.9618644067796,
     "min_reg_days": 149,
-    "max_reg_days": 3931,
-    "median_reactions": 59.5,
-    "pct_priority": 63.96396396396396
+    "max_reg_days": 4142,
+    "median_reactions": 60.0,
+    "pct_priority": 60.16949152542372
   },
   {
     "city": "'s-Gravenhage",
@@ -35,13 +35,13 @@
   {
     "city": "Amstelveen",
     "type_of_room": "Unfurnished",
-    "count": 127,
-    "median_reg_days": 2149.0,
-    "mean_reg_days": 2102.6220472440946,
+    "count": 136,
+    "median_reg_days": 2146.0,
+    "mean_reg_days": 2103.4117647058824,
     "min_reg_days": 122,
     "max_reg_days": 3641,
     "median_reactions": 51.0,
-    "pct_priority": 14.173228346456693
+    "pct_priority": 13.23529411764706
   },
   {
     "city": "Amstelveen",
@@ -68,23 +68,23 @@
   {
     "city": "Amsterdam",
     "type_of_room": "Unfurnished",
-    "count": 610,
-    "median_reg_days": 1931.5,
-    "mean_reg_days": 1924.616393442623,
+    "count": 657,
+    "median_reg_days": 1918.0,
+    "mean_reg_days": 1905.1811263318114,
     "min_reg_days": 50,
     "max_reg_days": 4642,
     "median_reactions": 42.0,
-    "pct_priority": 1.8032786885245904
+    "pct_priority": 1.67427701674277
   },
   {
     "city": "Amsterdam",
     "type_of_room": "Upholstered",
-    "count": 12,
-    "median_reg_days": 1680.5,
-    "mean_reg_days": 1639.3333333333333,
-    "min_reg_days": 838,
+    "count": 15,
+    "median_reg_days": 1596.0,
+    "mean_reg_days": 1526.2666666666667,
+    "min_reg_days": 775,
     "max_reg_days": 2302,
-    "median_reactions": 36.5,
+    "median_reactions": 35.0,
     "pct_priority": 0.0
   },
   {
@@ -101,13 +101,13 @@
   {
     "city": "Delft",
     "type_of_room": "Unfurnished",
-    "count": 323,
-    "median_reg_days": 1815.0,
-    "mean_reg_days": 1922.0278637770898,
+    "count": 339,
+    "median_reg_days": 1816.0,
+    "mean_reg_days": 1922.9410029498524,
     "min_reg_days": 15,
     "max_reg_days": 4998,
-    "median_reactions": 55.0,
-    "pct_priority": 28.792569659442723
+    "median_reactions": 56.0,
+    "pct_priority": 28.908554572271388
   },
   {
     "city": "Delft",
@@ -134,12 +134,12 @@
   {
     "city": "Deventer",
     "type_of_room": "Unfurnished",
-    "count": 34,
+    "count": 36,
     "median_reg_days": 1370.0,
-    "mean_reg_days": 1451.7058823529412,
+    "mean_reg_days": 1447.6666666666667,
     "min_reg_days": 299,
     "max_reg_days": 2901,
-    "median_reactions": 60.0,
+    "median_reactions": 57.0,
     "pct_priority": 0.0
   },
   {
@@ -156,13 +156,13 @@
   {
     "city": "Ede",
     "type_of_room": "Unfurnished",
-    "count": 6,
-    "median_reg_days": 623.0,
-    "mean_reg_days": 599.5,
-    "min_reg_days": 61,
+    "count": 8,
+    "median_reg_days": 237.5,
+    "mean_reg_days": 483.25,
+    "min_reg_days": 47,
     "max_reg_days": 1102,
-    "median_reactions": 7.5,
-    "pct_priority": 33.33333333333333
+    "median_reactions": 7.0,
+    "pct_priority": 25.0
   },
   {
     "city": "Ede",
@@ -178,12 +178,12 @@
   {
     "city": "Groningen",
     "type_of_room": "Furnished",
-    "count": 1,
-    "median_reg_days": 238.0,
-    "mean_reg_days": 238.0,
-    "min_reg_days": 238,
+    "count": 2,
+    "median_reg_days": 212.5,
+    "mean_reg_days": 212.5,
+    "min_reg_days": 187,
     "max_reg_days": 238,
-    "median_reactions": 9.0,
+    "median_reactions": 6.0,
     "pct_priority": 0.0
   },
   {
@@ -211,9 +211,9 @@
   {
     "city": "Groningen",
     "type_of_room": "Unfurnished",
-    "count": 197,
-    "median_reg_days": 1396.0,
-    "mean_reg_days": 1308.492385786802,
+    "count": 204,
+    "median_reg_days": 1394.0,
+    "mean_reg_days": 1298.2058823529412,
     "min_reg_days": 20,
     "max_reg_days": 3888,
     "median_reactions": 30.0,
@@ -222,11 +222,11 @@
   {
     "city": "Groningen",
     "type_of_room": "Upholstered",
-    "count": 51,
-    "median_reg_days": 540.0,
-    "mean_reg_days": 613.2941176470588,
+    "count": 61,
+    "median_reg_days": 600.0,
+    "mean_reg_days": 641.7868852459017,
     "min_reg_days": 19,
-    "max_reg_days": 1631,
+    "max_reg_days": 2578,
     "median_reactions": 6.0,
     "pct_priority": 0.0
   },
@@ -255,13 +255,13 @@
   {
     "city": "Haarlem",
     "type_of_room": "Unfurnished",
-    "count": 97,
-    "median_reg_days": 1469.0,
-    "mean_reg_days": 1450.5360824742268,
+    "count": 100,
+    "median_reg_days": 1431.0,
+    "mean_reg_days": 1425.68,
     "min_reg_days": 103,
     "max_reg_days": 3288,
     "median_reactions": 38.0,
-    "pct_priority": 3.0927835051546393
+    "pct_priority": 3.0
   },
   {
     "city": "Haarlem",
@@ -299,20 +299,20 @@
   {
     "city": "Hoofddorp",
     "type_of_room": "Unfurnished",
-    "count": 171,
-    "median_reg_days": 592.0,
-    "mean_reg_days": 734.2105263157895,
+    "count": 182,
+    "median_reg_days": 591.0,
+    "mean_reg_days": 741.054945054945,
     "min_reg_days": 8,
-    "max_reg_days": 2725,
+    "max_reg_days": 2890,
     "median_reactions": 13.0,
-    "pct_priority": 11.11111111111111
+    "pct_priority": 10.43956043956044
   },
   {
     "city": "Hoofddorp",
     "type_of_room": "Upholstered",
-    "count": 73,
-    "median_reg_days": 878.0,
-    "mean_reg_days": 886.7534246575342,
+    "count": 75,
+    "median_reg_days": 862.0,
+    "mean_reg_days": 875.6,
     "min_reg_days": 26,
     "max_reg_days": 2041,
     "median_reactions": 8.0,
@@ -332,13 +332,13 @@
   {
     "city": "Leiden",
     "type_of_room": "Unfurnished",
-    "count": 374,
-    "median_reg_days": 2036.5,
-    "mean_reg_days": 2175.4545454545455,
+    "count": 401,
+    "median_reg_days": 2036.0,
+    "mean_reg_days": 2171.516209476309,
     "min_reg_days": 54,
     "max_reg_days": 5447,
     "median_reactions": 66.0,
-    "pct_priority": 16.844919786096256
+    "pct_priority": 15.710723192019952
   },
   {
     "city": "Leiden",
@@ -354,11 +354,11 @@
   {
     "city": "Oegstgeest",
     "type_of_room": "Unfurnished",
-    "count": 9,
-    "median_reg_days": 2168.0,
-    "mean_reg_days": 1925.6666666666667,
+    "count": 11,
+    "median_reg_days": 2309.0,
+    "mean_reg_days": 2070.909090909091,
     "min_reg_days": 846,
-    "max_reg_days": 2722,
+    "max_reg_days": 2726,
     "median_reactions": 34.0,
     "pct_priority": 0.0
   },
@@ -387,13 +387,13 @@
   {
     "city": "Wageningen",
     "type_of_room": "Furnished",
-    "count": 604,
-    "median_reg_days": 189.5,
-    "mean_reg_days": 429.90562913907286,
+    "count": 638,
+    "median_reg_days": 230.0,
+    "mean_reg_days": 453.2115987460815,
     "min_reg_days": 7,
-    "max_reg_days": 2651,
+    "max_reg_days": 2652,
     "median_reactions": 9.0,
-    "pct_priority": 55.794701986754966
+    "pct_priority": 52.82131661442007
   },
   {
     "city": "Wageningen",
@@ -409,13 +409,13 @@
   {
     "city": "Wageningen",
     "type_of_room": "Unfurnished",
-    "count": 499,
-    "median_reg_days": 918.0,
-    "mean_reg_days": 1109.8436873747496,
+    "count": 526,
+    "median_reg_days": 934.5,
+    "mean_reg_days": 1116.9201520912547,
     "min_reg_days": 4,
     "max_reg_days": 3353,
     "median_reactions": 20.0,
-    "pct_priority": 30.861723446893784
+    "pct_priority": 29.65779467680608
   },
   {
     "city": "Wageningen",
