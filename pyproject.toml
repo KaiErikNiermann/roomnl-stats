@@ -15,7 +15,7 @@ numpy = ">=1.26"
 scikit-learn = ">=1.4"
 playwright = ">=1.40"
 rich = ">=14.0"
-pyarrow = ">=23.0.1,<25.0.0"
+pyarrow = ">=23.0.1,<26.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.3"
